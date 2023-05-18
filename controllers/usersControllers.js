@@ -1,11 +1,30 @@
 const prisma = require("../utils/prismaClient");
 exports.getUsers = async (req, res) => {
+  const {limit,skip,orderBy,direction,filter,on} = req.query;
+  console.log(limit);
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        [filter]: {
+          contains: on,
+          /* mode: 'insensitive', // Default value: default */
+        }, 
+      },
+      orderBy:[
+        {
+        [orderBy]:direction,
+        }
+      ],
+      skip:parseInt(skip),
+      take: parseInt(limit) || 2,
+    });
     res.json({
+      count:users.length,
       users,
     });
   } catch (e) {
+    console.log(e);
+
     res.status(500).json({
       error: e,
     });
@@ -53,7 +72,7 @@ exports.updateUser = async (req, res) => {
   try {
     const user = await prisma.user.update({
       where: {
-        id: userId,
+        id: parseInt(userId),
       },
       data: {
         ...userData,
@@ -70,5 +89,16 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
   const { id: userId } = req.params;
-  res.send(`User #${userId} deleted`);
+  try {
+    const user = await prisma.user.delete({
+      where: {
+        id: parseInt(userId),
+      },
+    });
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({
+      error,
+    });
+  }
 };

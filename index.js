@@ -6,38 +6,42 @@ const multer = require("multer"); // v1.0.5
 const upload = multer(); // for parsing multipart/form-data
 
 //Routes
+const usersRoutes = require("./Routes/usersRoutes");
+const companiesRoutes = require("./Routes/companiesRoutes");
+const customersRoutes = require("./Routes/customersRoutes");
+const remoteApiRoutes = require("./Routes/remoteApiRoutes");
+const path = require("path");
 
-const usersRoutes= require("./Routes/usersRoutes");
-const companiesRoutes=require("./Routes/companiesRoutes")
+//middlewares
+const generalMiddlewares = require("./middlewares/general");
 
 
-//users
+//bodyParser
 app.use(bodyParser.json());
-app.use("/users" , usersRoutes);
-app.use("/companies",companiesRoutes);
-
 
 //test
 app.get("/", (req, res) => {
-  res.send(`Welcome to CRM api!`);
+  res.sendFile(path.join(__dirname,`/views/index.html`));
 });
+
+app.use(generalMiddlewares.time);
+
+//remote API
+app.use("/remote",remoteApiRoutes);
+
+//users
+app.use("/users", usersRoutes);
+
+//companies
+app.use("/companies", companiesRoutes);
+
+//customers
+app.use(generalMiddlewares.apiKeyAuth);
+app.use("/customers", customersRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listining on port ${port}`);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 
 app.get("/users", (req, res) => {
@@ -59,5 +63,5 @@ app.post("/", (req, res) => {
     res.send(`Hello, ${str}!`);
   })
  */
-/* 
-  */
+/*
+ */
